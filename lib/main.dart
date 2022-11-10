@@ -26,7 +26,11 @@ void main() async {
     initialRoute: prefs.containsKey('loginCode') ? '/mojekarty' : '/homePage',
   );
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.blue,
+    systemNavigationBarColor: Colors.black,
+    systemNavigationBarIconBrightness: Brightness.dark,
+    statusBarColor: Colors.black,
+    statusBarIconBrightness: Brightness.dark,
+
 
   ));
   runApp(myApp);

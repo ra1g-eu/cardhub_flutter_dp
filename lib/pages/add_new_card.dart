@@ -86,9 +86,12 @@ class AddNewCardState extends State<AddNewCard> {
               });
         }
       },
+      edgeOffset: 50,
       triggerMode: RefreshIndicatorTriggerMode.onEdge,
       child: Scaffold(
+          backgroundColor: Colors.yellow.shade600,
           appBar: AppBar(
+            backgroundColor: Colors.black,
             automaticallyImplyLeading: true,
             title: const Text('Vytvorenie karty'),
           ),
@@ -115,55 +118,28 @@ class AddNewCardState extends State<AddNewCard> {
                       ],
                     );
                   } else {
-                    return GridView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 250,
-                              childAspectRatio: 1,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10),
-                      itemCount: snapshot.data?.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(context, "/novakartadetail",
-                                arguments: ShopDetail(
-                                    snapshot.data![index].shopId,
-                                    snapshot.data![index].shopName,
-                                    snapshot.data![index].shopLogo));
-                          },
-                          child: Card(
-                            elevation: 5,
-                            shadowColor: Colors.black,
-                            clipBehavior: Clip.antiAlias,
-                            child: Container(
-                                height: 75,
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      ClipOval(
-                                        child: base64ToImage(
-                                            snapshot.data![index].shopLogo),
-                                      ),
-                                      ListTile(
-                                        title: Text(
-                                          snapshot.data![index].shopName,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 19,
-                                              letterSpacing: 1.1,
-                                              fontFamily: 'Roboto'),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                    ])),
-                          ),
-                        );
-                      },
-                    );
+                    return ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: snapshot.data?.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(snapshot.data![index].shopName, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w400)),
+                            onTap: () {
+                              Navigator.pushNamed(context, "/novakartadetail",
+                                  arguments: ShopDetail(
+                                      snapshot.data![index].shopId,
+                                      snapshot.data![index].shopName,
+                                      snapshot.data![index].shopLogo));
+                            },
+                            leading: CircleAvatar(
+                              radius: 25,
+                              backgroundColor: Colors.transparent,
+                                child: ClipOval(
+                                  child: base64ToImage(
+                                      snapshot.data![index].shopLogo),
+                                ),),
+                          );
+                        });
                   }
                 } else if (snapshot.hasError) {
                   return Container(

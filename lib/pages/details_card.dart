@@ -104,7 +104,7 @@ class DetailCardState extends State<DetailCard>
         ModalRoute.of(context)?.settings.arguments as CardDetail;
     return Scaffold(
         bottomNavigationBar: Container(
-          color: Colors.blue,
+          color: Colors.black,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -253,7 +253,7 @@ class DetailCardState extends State<DetailCard>
                           pageBuilder: (bc, ania, anis) {
                             return SizedBox.expand(
                               child: Container(
-                                color: Colors.blueAccent,
+                                color: Colors.yellow.shade600,
                                 child: Padding(
                                   padding: const EdgeInsets.all(20.0),
                                   child: Column(
@@ -262,7 +262,7 @@ class DetailCardState extends State<DetailCard>
                                     children: [
                                       Text("Poznámky",
                                           style: TextStyle(
-                                              color: Colors.white,
+                                              color: Colors.black,
                                               fontSize: 22,
                                               decoration: TextDecoration.none,
                                               fontWeight: FontWeight.bold)),
@@ -291,7 +291,7 @@ class DetailCardState extends State<DetailCard>
                                           style: ButtonStyle(
                                               backgroundColor:
                                                   MaterialStateProperty.all(
-                                                      Colors.red.shade600),
+                                                      Colors.black),
                                               padding:
                                                   MaterialStateProperty.all(
                                                       EdgeInsets.symmetric(
@@ -379,7 +379,7 @@ class DetailCardState extends State<DetailCard>
                   Bubble(
                     title: "Čiarový kód",
                     iconColor: Colors.black,
-                    bubbleColor: Colors.amber,
+                    bubbleColor: Colors.amber.shade200,
                     icon: Icons.numbers,
                     titleStyle:
                         const TextStyle(fontSize: 18, color: Colors.black),
@@ -393,7 +393,7 @@ class DetailCardState extends State<DetailCard>
                   Bubble(
                     title: "QR Kód",
                     iconColor: Colors.black,
-                    bubbleColor: Colors.amber,
+                    bubbleColor: Colors.amber.shade200,
                     icon: Icons.qr_code,
                     titleStyle:
                         const TextStyle(fontSize: 18, color: Colors.black),
@@ -411,11 +411,12 @@ class DetailCardState extends State<DetailCard>
                     : _animationController.forward(),
                 iconColor: Colors.white,
                 iconData: Icons.change_circle_outlined,
-                backGroundColor: Colors.green,
+                backGroundColor: Colors.black,
               )
             : null,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.yellow.shade600,
         appBar: AppBar(
+          backgroundColor: Colors.black,
           title: Text(cardDetail.cardName),
           actions: [
             IconButton(

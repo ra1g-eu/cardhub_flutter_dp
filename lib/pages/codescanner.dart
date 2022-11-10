@@ -17,6 +17,7 @@ class ScannerState extends State<Scanner> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.black,
           leading: IconButton(
             onPressed: () {
               Navigator.pop(context, "scanCancelled");

@@ -41,8 +41,9 @@ class EditExistingCardState extends State<EditExistingCard> {
     final CardToEdit cardToEdit =
         ModalRoute.of(context)?.settings.arguments as CardToEdit;
     return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.yellow.shade600,
         appBar: AppBar(
+          backgroundColor: Colors.black,
           title: Text("Úprava ${cardToEdit.cardName}"),
         ),
         //passing in the ListView.builder
@@ -55,7 +56,7 @@ class EditExistingCardState extends State<EditExistingCard> {
                 cardToEdit.cardNotes = snapshot.data![0].cardNotes;
                 cardDescController.text = cardToEdit.cardNotes;
                 return Material(
-                  color: Colors.blueAccent,
+                  color: Colors.yellow.shade600,
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
@@ -77,13 +78,13 @@ class EditExistingCardState extends State<EditExistingCard> {
                               keyboardType: TextInputType.multiline,
                               maxLength: 500,
                               style:
-                                  TextStyle(fontSize: 20, color: Colors.white),
+                                  TextStyle(fontSize: 20, color: Colors.black),
                               controller: cardDescController,
                               decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   hintText: 'Vlož doplňujúce informácie karty',
                                   hintStyle: TextStyle(
-                                      fontSize: 20, color: Colors.white)),
+                                      fontSize: 20, color: Colors.black)),
                               onChanged: (value) {
                                 cardToEdit.cardNotes = value;
                               },
@@ -102,11 +103,11 @@ class EditExistingCardState extends State<EditExistingCard> {
                                         borderSide: BorderSide(
                                             color: Colors.black, width: 2)),
                                     hintStyle: TextStyle(
-                                        fontSize: 20, color: Colors.white),
+                                        fontSize: 20, color: Colors.black),
                                     hintText: cardToEdit.cardManualCode),
                                 textAlign: TextAlign.start,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   fontSize: 20,
                                 ),
                                 controller: textController,
@@ -210,7 +211,7 @@ class EditExistingCardState extends State<EditExistingCard> {
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.all(15),
-                                  backgroundColor: Colors.black38,
+                                  backgroundColor: Colors.black,
                                   // side: BorderSide(color: Colors.yellow, width: 5),
                                   textStyle: const TextStyle(
                                       color: Colors.white, fontSize: 20, fontStyle: FontStyle.normal),

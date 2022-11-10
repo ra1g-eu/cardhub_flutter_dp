@@ -32,7 +32,7 @@ class _WebViewPageState extends State<WebViewPage> {
             return Scaffold(
               appBar: AppBar(
                 automaticallyImplyLeading: false,
-                backgroundColor: Colors.blue[700],
+                backgroundColor: Colors.black,
                 toolbarHeight: 45,
                 centerTitle: true,
                 // Add from here ...
