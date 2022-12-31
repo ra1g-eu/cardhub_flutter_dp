@@ -60,7 +60,6 @@ class DisplayCardState extends State<DisplayCard> {
 
   @override
   Widget build(BuildContext context) {
-
     final navigator = Navigator.of(context);
     return WillPopScope(
       onWillPop: () async {
@@ -361,7 +360,6 @@ class DisplayCardState extends State<DisplayCard> {
                 body: FutureBuilder<List<Cards>>(
                     future: fetchCardsFromDatabase(),
                     builder: (context, snapshot) {
-
                       if (!isLoaded) {
                         context.loaderOverlay.show();
                       }
@@ -403,13 +401,25 @@ class DisplayCardState extends State<DisplayCard> {
                               .toList();
                         }
                         if (newCards.isEmpty) {
-                          return Container(
-                              alignment: AlignmentDirectional.center,
-                              child: isFavorite
-                                  ? Text(
-                                      'Nemáš žiadne obľúbené karty! Skús si nejaké pridať.')
-                                  : Text(
-                                      'Nemáš žiadne karty! Skús pozrieť obľúbené karty.'));
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              ListView(
+                                padding: EdgeInsets.fromLTRB(0, 200, 0, 0),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                children: [
+                                  Container(
+                                    alignment: AlignmentDirectional.center,
+                                    child: isFavorite
+                                        ? Text(
+                                            'Nemáš žiadne obľúbené karty! Skús si nejaké pridať.')
+                                        : Text(
+                                            'Nemáš žiadne karty! Skús pozrieť obľúbené karty.'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          );
                         }
                         return GridView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
@@ -419,25 +429,26 @@ class DisplayCardState extends State<DisplayCard> {
                                     childAspectRatio: 2 / 2,
                                     crossAxisSpacing: 5,
                                     mainAxisSpacing: 5,
-                                mainAxisExtent: 250),
+                                    mainAxisExtent: 250),
                             itemCount: newCards.length,
                             itemBuilder: (BuildContext ctx, index) {
                               return GestureDetector(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 15),
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.black,
-                                        border: Border.all(
-                                        ),
-                                        borderRadius: BorderRadius.all(Radius.circular(5))
-                                    ),
+                                        color: Colors.black,
+                                        border: Border.all(),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(5))),
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 8),
                                     child: Column(
                                       children: <Widget>[
                                         Container(
-                                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 3),
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 10, horizontal: 3),
                                           alignment: Alignment.topLeft,
                                           child: Text(
                                             newCards[index].cardName,
@@ -454,14 +465,13 @@ class DisplayCardState extends State<DisplayCard> {
                                         Center(
                                           child: Image(
                                             image: base64ToImage(
-                                                newCards[index].shopLogo)
+                                                    newCards[index].shopLogo)
                                                 .image,
                                             fit: BoxFit.fitWidth,
                                             height: 130,
                                             isAntiAlias: true,
                                           ),
                                         )
-
                                       ],
                                     ),
                                   ),

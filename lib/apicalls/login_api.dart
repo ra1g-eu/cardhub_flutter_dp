@@ -18,7 +18,10 @@ class LoginApi {
       );
       if (jsonDecode(response.body)['status'] == "success") {
         final cardsOnly = jsonDecode(response.body)['message'];
-        await DBHelper().saveCards(cardsOnly);
+        //print(cardsOnly);
+        if(cardsOnly != "Zatiaľ nemáš žiadne karty!"){
+          await DBHelper().saveCards(cardsOnly);
+        }
         return 'loginSuccess';
       } else if (jsonDecode(response.body)['status'] == "error") {
         return jsonDecode(response.body)['message'];

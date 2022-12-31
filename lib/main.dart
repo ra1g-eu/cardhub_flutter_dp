@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cardhub/apicalls/logout.dart';
 import 'package:cardhub/pages/add_new_card.dart';
 import 'package:cardhub/pages/codescanner.dart';
@@ -6,6 +8,8 @@ import 'package:cardhub/pages/details_card.dart';
 import 'package:cardhub/pages/display_cards.dart';
 import 'package:cardhub/pages/edit_existing_card.dart';
 import 'package:cardhub/pages/webview_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -13,11 +17,21 @@ import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'apicalls/login_api.dart';
+import 'apicalls/register_api.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.android,
+  );
+
+
+  // Pass all uncaught "fatal" errors from the framework to Crashlytics
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
   final prefs = await SharedPreferences.getInstance();
-  if(prefs.containsKey('lateLogOut')){
+  if (prefs.containsKey('lateLogOut')) {
     await LogOutApi().logOutWithCode(prefs.getString('loginCode')!, true);
     await prefs.remove('loginCode');
     await prefs.remove('lateLogOut');
@@ -30,8 +44,6 @@ void main() async {
     systemNavigationBarIconBrightness: Brightness.dark,
     statusBarColor: Colors.black,
     statusBarIconBrightness: Brightness.dark,
-
-
   ));
   runApp(myApp);
 }
@@ -48,7 +60,7 @@ class MyApp extends StatelessWidget {
       title: 'CardHub Flutter',
       initialRoute: initialRoute,
       routes: {
-        "/homePage": (context) => const MyHomePage(title: "Prihlásenie"),
+        "/homePage": (context) => const MyHomePage(title: "CardHub"),
         "/mojekarty": (context) => const DisplayCard(),
         "/detailkarty": (context) => const DetailCard(),
         "/novakarta": (context) => const AddNewCard(),
@@ -57,15 +69,6 @@ class MyApp extends StatelessWidget {
         '/detailkartyedit': (context) => const EditExistingCard(),
       },
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'CardHub'),
@@ -76,15 +79,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -93,6 +87,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final _controller = TextEditingController();
+  final _registerController = TextEditingController();
+
+  final uniqueId = getCustomUniqueId();
+  late final String uniqueSuffix;
+
+  @override
+  void initState() {
+    uniqueSuffix = uniqueId.substring(3,7).toUpperCase();
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -104,160 +108,367 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
+      backgroundColor: Colors.yellow.shade600,
       appBar: AppBar(
+        leading: const Icon(Icons.credit_card_outlined),
+        backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Invoke "debug painting" (press "p" in the console, choose the
-            // "Toggle Debug Paint" action from the Flutter Inspector in Android
-            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-            // to see the wireframe for each widget.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
-            mainAxisAlignment: MainAxisAlignment.start,
-
-            children: <Widget>[
-              const SizedBox(
-                height: 30,
-              ),
-              const Text("CardHub", style: TextStyle(fontSize: 40)),
-              const SizedBox(
-                height: 30,
-              ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(bottom: 1),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.0),
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Colors.black12,
-                          offset: Offset(0.0, 15.0),
-                          blurRadius: 15.0),
-                      BoxShadow(
-                          color: Colors.black12,
-                          offset: Offset(0.0, -10.0),
-                          blurRadius: 10.0),
-                    ]),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      const Text("Prihlasovací kód",
-                          style: TextStyle(fontSize: 23)),
-                      TextField(
-                        controller: _controller,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              // Center is a layout widget. It takes a single child and positions it
+              // in the middle of the parent.
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(bottom: 1),
+                      decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(4.0),
+                          boxShadow: const [
+                            BoxShadow(
+                                color: Colors.black12,
+                                offset: Offset(0.0, 15.0),
+                                blurRadius: 15.0),
+                            BoxShadow(
+                                color: Colors.black12,
+                                offset: Offset(0.0, -10.0),
+                                blurRadius: 10.0),
+                          ]),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: 16.0, right: 16.0, top: 16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const Text("Vlož prihlasovací kód:",
+                                style: TextStyle(
+                                    fontSize: 23, color: Colors.white)),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            TextField(
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      width: 2,
+                                      style: BorderStyle.solid,
+                                      color: Colors.white24),
+                                ),
+                              ),
+                              controller: _controller,
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                OutlinedButton.icon(
+                                    onPressed: () async {
+                                      final navigator = Navigator.of(context);
+                                      if (_controller.text.isEmpty) {
+                                        QuickAlert.show(
+                                          context: context,
+                                          type: QuickAlertType.warning,
+                                          title: 'Prihlásenie',
+                                          text: 'Kód nemôže byť prázdny.',
+                                        );
+                                      } else {
+                                        QuickAlert.show(
+                                          context: context,
+                                          type: QuickAlertType.loading,
+                                          title: 'Prihlásenie',
+                                          text: 'Načítavam dáta...',
+                                        );
+                                        bool isInternet =
+                                            await InternetConnectionChecker()
+                                                .hasConnection;
+                                        if (isInternet) {
+                                          String result = await LoginApi()
+                                              .loginWithCode(_controller.text);
+                                          if (result == 'loginSuccess') {
+                                            final prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            await prefs.setString(
+                                                'loginCode', _controller.text);
+                                            navigator.pushNamedAndRemoveUntil(
+                                                "/mojekarty", (_) => false);
+                                          } else if (result == 'apiError') {
+                                            navigator.pop();
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              title: 'Prihlásenie',
+                                              text:
+                                                  'Chyba aplikácie. Vývojár bol informovaný.',
+                                            );
+                                            throw Exception('RegisterApi Error');
+                                          } else {
+                                            navigator.pop();
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              title: 'Prihlásenie',
+                                              text: result,
+                                            );
+                                          }
+                                        } else {
+                                          navigator.pop();
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            title: 'Prihlásenie',
+                                            text:
+                                                'Nemáš pripojenie na internet. Skús to neskôr.',
+                                          );
+                                        }
+                                      }
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      elevation: 10,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.login,
+                                      color: Colors.green,
+                                    ),
+                                    label: const Text(
+                                      "Prihlásiť sa",
+                                      style: TextStyle(
+                                          color: Colors.green, fontSize: 20),
+                                    ))
+                              ],
+                            )
+                          ],
+                        ),
                       ),
-                      const SizedBox(
-                        height: 30,
-                      ),
-                      const SizedBox(
-                        height: 30,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          OutlinedButton(
-                              onPressed: null,
-                              style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          Colors.amber)),
-                              child: const Text("Registrovať sa")),
-                          OutlinedButton(
-                              onPressed: () async {
-                                final navigator = Navigator.of(context);
-                                if (_controller.text.isEmpty) {
-                                  QuickAlert.show(
-                                    context: context,
-                                    type: QuickAlertType.warning,
-                                    title: 'Prihlásenie',
-                                    text: 'Kód nemôže byť prázdny.',
-                                  );
-                                } else {
-                                  QuickAlert.show(
-                                    context: context,
-                                    type: QuickAlertType.loading,
-                                    title: 'Prihlásenie',
-                                    text: 'Načítavam dáta...',
-                                  );
-                                  bool isInternet = await InternetConnectionChecker().hasConnection;
-                                  if(isInternet){
-                                    String result = await LoginApi()
-                                        .loginWithCode(_controller.text);
-                                    if (result == 'loginSuccess') {
-                                      final prefs =
-                                      await SharedPreferences.getInstance();
-                                      await prefs.setString(
-                                          'loginCode', _controller.text);
-                                      navigator.pushNamedAndRemoveUntil(
-                                          "/mojekarty", (_) => false);
-                                    } else if (result == 'apiError') {
-                                      navigator.pop();
+                    ),
+                    const SizedBox(
+                      height: 35,
+                    ),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(bottom: 1),
+                      decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(4.0),
+                          boxShadow: const [
+                            BoxShadow(
+                                color: Colors.black12,
+                                offset: Offset(0.0, 15.0),
+                                blurRadius: 15.0),
+                            BoxShadow(
+                                color: Colors.black12,
+                                offset: Offset(0.0, -10.0),
+                                blurRadius: 10.0),
+                          ]),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: 16.0, right: 16.0, top: 16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const Text("Vytvoriť nový účet:",
+                                style: TextStyle(
+                                    fontSize: 23, color: Colors.white)),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            TextField(
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                  suffixStyle: const TextStyle(
+                                      fontSize: 22, color: Colors.white60),
+                                  suffixText: "#$uniqueSuffix",
+                                  enabledBorder: const OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        width: 2,
+                                        style: BorderStyle.solid,
+                                        color: Colors.white24),
+                                  ),
+                                  hintText: "Vlož vlastný prhlasovací kód"),
+                              controller: _registerController,
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final navigator = Navigator.of(context);
+                                    if (_registerController.text.isEmpty) {
                                       QuickAlert.show(
                                         context: context,
-                                        type: QuickAlertType.error,
-                                        title: 'Prihlásenie',
-                                        text:
-                                        'Chyba aplikácie. Vývojár bol informovaný.',
+                                        type: QuickAlertType.warning,
+                                        title: 'Vytvorenie účtu',
+                                        text: 'Kód nemôže byť prázdny.',
                                       );
                                     } else {
-                                      navigator.pop();
                                       QuickAlert.show(
                                         context: context,
-                                        type: QuickAlertType.error,
-                                        title: 'Prihlásenie',
-                                        text: result,
+                                        type: QuickAlertType.loading,
+                                        title: 'Vytvorenie účtu',
+                                        text: 'Načítavam dáta...',
                                       );
+                                      bool isInternet = await InternetConnectionChecker().hasConnection;
+                                      Future.delayed(const Duration(milliseconds: 500), () async{
+                                      if (isInternet) {
+                                        String uniqueNewId = "${_registerController.text}#$uniqueSuffix";
+                                        print(uniqueNewId);
+                                        String result = await RegisterApi().registerWithCode(uniqueNewId);
+                                        if (result == 'registerSuccess') {
+                                          String result = await LoginApi().loginWithCode(uniqueNewId);
+                                          navigator.pop();
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.loading,
+                                            title: 'Prihlásenie',
+                                            text: 'Načítavam dáta...',
+                                          );
+                                          if(result == 'loginSuccess'){
+                                            final prefs =
+                                            await SharedPreferences
+                                                .getInstance();
+                                            await prefs.setString(
+                                                'loginCode', uniqueNewId);
+                                            navigator.pushNamedAndRemoveUntil(
+                                                "/mojekarty", (_) => false);
+                                          } else if (result == 'apiError') {
+                                            navigator.pop();
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              title: 'Prihlásenie',
+                                              text:
+                                              'Chyba aplikácie. Vývojár bol informovaný.',
+                                            );
+                                          } else {
+                                            navigator.pop();
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              title: 'Vytvorenie účtu',
+                                              text: result,
+                                            );
+                                          }
+                                        } else if (result == 'apiError') {
+                                          navigator.pop();
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            title: 'Vytvorenie účtu',
+                                            text:
+                                            'Chyba aplikácie. Vývojár bol informovaný.',
+                                          );
+                                        } else {
+                                          navigator.pop();
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            title: 'Vytvorenie účtu',
+                                            text: result,
+                                          );
+                                        }
+                                      } else {
+                                        navigator.pop();
+                                        QuickAlert.show(
+                                          context: context,
+                                          type: QuickAlertType.error,
+                                          title: 'Vytvorenie účtu',
+                                          text:
+                                          'Nemáš pripojenie na internet. Skús to neskôr.',
+                                        );
+                                      }
+                                      });
                                     }
-                                  } else {
-                                    navigator.pop();
-                                    QuickAlert.show(
-                                      context: context,
-                                      type: QuickAlertType.error,
-                                      title: 'Prihlásenie',
-                                      text: 'Nemáš pripojenie na internet. Skús to neskôr.',
-                                    );
-                                  }
-                                }
-                              },
-                              child: const Text("Prihlásiť sa"))
-                        ],
-                      )
-                    ],
-                  ),
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    elevation: 10,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.green,
+                                  ),
+                                  label: const Text(
+                                    "Vytvoriť účet",
+                                    style: TextStyle(
+                                        color: Colors.green, fontSize: 20),
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 35,
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+String getCustomUniqueId() {
+  const String pushChars =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  int lastPushTime = 0;
+  List lastRandChars = [];
+  int now = DateTime.now().millisecondsSinceEpoch;
+  bool duplicateTime = (now == lastPushTime);
+  lastPushTime = now;
+  List timeStampChars = List<String>.filled(8, '0');
+  for (int i = 7; i >= 0; i--) {
+    timeStampChars[i] = pushChars[now % 62];
+    now = (now / 64).floor();
+  }
+  if (now != 0) {
+    print("Id should be unique");
+  }
+  String uniqueId = timeStampChars.join('');
+  if (!duplicateTime) {
+    for (int i = 0; i < 12; i++) {
+      lastRandChars.add((Random().nextDouble() * 62).floor());
+    }
+  } else {
+    int i = 0;
+    for (int i = 11; i >= 0 && lastRandChars[i] == 62; i--) {
+      lastRandChars[i] = 0;
+    }
+    lastRandChars[i]++;
+  }
+  for (int i = 0; i < 12; i++) {
+    uniqueId += pushChars[lastRandChars[i]];
+  }
+  return uniqueId;
 }

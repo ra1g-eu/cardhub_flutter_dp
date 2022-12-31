@@ -78,8 +78,7 @@ class DetailCardState extends State<DetailCard>
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      cardDetails =
-          ModalRoute.of(context)?.settings.arguments as CardDetail;
+      cardDetails = ModalRoute.of(context)?.settings.arguments as CardDetail;
 
       isCardFavorite = await isFavorite(cardDetails.cardUuid);
       setState(() {});
@@ -246,73 +245,101 @@ class DetailCardState extends State<DetailCard>
                 child: Ink(
                   child: InkWell(
                     onTap: () {
-                      showGeneralDialog(
-                          barrierDismissible: false,
-                          context: context,
-                          transitionDuration: Duration(milliseconds: 200),
-                          pageBuilder: (bc, ania, anis) {
-                            return SizedBox.expand(
-                              child: Container(
-                                color: Colors.yellow.shade600,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Text("Poznámky",
-                                          style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 22,
-                                              decoration: TextDecoration.none,
-                                              fontWeight: FontWeight.bold)),
-                                      SizedBox(
-                                        height: 25,
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 25),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blueAccent.shade200,
-                                            border: Border.all(
-                                                color: Colors.deepPurple)),
-                                        child: Text(
-                                          cardNotes,
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              decoration: TextDecoration.none,
-                                              fontWeight: FontWeight.w400),
+                      cardNotes.isEmpty
+                          ? QuickAlert.show(
+                              context: context,
+                              type: QuickAlertType.warning,
+                              title: 'Poznámky',
+                              text: 'Táto karta nemá žiadne poznámky!',
+                              confirmBtnText: 'Zatvoriť')
+                          : showGeneralDialog(
+                              barrierDismissible: false,
+                              context: context,
+                              transitionDuration: Duration(milliseconds: 200),
+                              pageBuilder: (bc, ania, anis) {
+                                return SizedBox.expand(
+                                  child: Container(
+                                    height: MediaQuery.of(context).size.height,
+                                    color: Colors.black,
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          0, 65, 0, 0),
+                                      child: Card(
+                                        color: Colors.black,
+                                        elevation: 0,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: <Widget>[
+                                            const ListTile(
+                                              leading: Icon(
+                                                Icons.notes,
+                                                color: Colors.white,
+                                                size: 30,
+                                              ),
+                                              title: Text(
+                                                'Poznámky',
+                                                style: TextStyle(
+                                                    fontSize: 23,
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                            Container(
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 15,
+                                                      vertical: 25),
+                                              alignment: Alignment.topLeft,
+                                              child: Text(
+                                                cardNotes,
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 18),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Align(
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                child: ButtonBar(
+                                                  children: <Widget>[
+                                                    OutlinedButton(
+                                                      onPressed: () {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                      style: OutlinedButton.styleFrom(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .symmetric(
+                                                                  horizontal:
+                                                                      25,
+                                                                  vertical: 10),
+                                                          backgroundColor:
+                                                              Colors.yellow
+                                                                  .shade600,
+                                                          foregroundColor:
+                                                              Colors.blue),
+                                                      child: const Text(
+                                                        'Zatvoriť',
+                                                        style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontSize: 19),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          style: ButtonStyle(
-                                              backgroundColor:
-                                                  MaterialStateProperty.all(
-                                                      Colors.black),
-                                              padding:
-                                                  MaterialStateProperty.all(
-                                                      EdgeInsets.symmetric(
-                                                          horizontal: 85, vertical: 10)),
-                                              textStyle:
-                                                  MaterialStateProperty.all(
-                                                      TextStyle(fontSize: 22))),
-                                          child: Text("Zatvoriť",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  decoration:
-                                                      TextDecoration.none)))
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                            );
-                          });
+                                );
+                              });
                     },
                     child: Padding(
-                        padding: EdgeInsets.all(10.0),
+                        padding: const EdgeInsets.all(10.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           verticalDirection: VerticalDirection.down,
@@ -374,44 +401,17 @@ class DetailCardState extends State<DetailCard>
           ),
         ),
         floatingActionButton: cardDetail.isManualCode
-            ? FloatingActionBubble(
-                items: [
-                  Bubble(
-                    title: "Čiarový kód",
-                    iconColor: Colors.black,
-                    bubbleColor: Colors.amber.shade200,
-                    icon: Icons.numbers,
-                    titleStyle:
-                        const TextStyle(fontSize: 18, color: Colors.black),
-                    onPress: () {
-                      setState(() {
-                        isQRCode = false;
-                      });
-                      _animationController.reverse();
-                    },
-                  ),
-                  Bubble(
-                    title: "QR Kód",
-                    iconColor: Colors.black,
-                    bubbleColor: Colors.amber.shade200,
-                    icon: Icons.qr_code,
-                    titleStyle:
-                        const TextStyle(fontSize: 18, color: Colors.black),
-                    onPress: () {
-                      setState(() {
-                        isQRCode = true;
-                      });
-                      _animationController.reverse();
-                    },
-                  ),
-                ],
-                animation: _animation,
-                onPress: () => _animationController.isCompleted
-                    ? _animationController.reverse()
-                    : _animationController.forward(),
-                iconColor: Colors.white,
-                iconData: Icons.change_circle_outlined,
-                backGroundColor: Colors.black,
+            ? FloatingActionButton(
+                onPressed: () {
+                  setState(() {
+                    isQRCode = !isQRCode;
+                  });
+                },
+                backgroundColor: Colors.black,
+                child: Icon(
+                  !isQRCode ? Icons.qr_code : Icons.numbers,
+                  color: Colors.white,
+                ),
               )
             : null,
         backgroundColor: Colors.yellow.shade600,
@@ -435,7 +435,9 @@ class DetailCardState extends State<DetailCard>
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 cardNotes = snapshot.data![0].cardNotes;
-                cardUrl = snapshot.data![0].countryName == 'Slovensko' ? snapshot.data![0].shopUrlSk : snapshot.data![0].shopUrlCz;
+                cardUrl = snapshot.data![0].countryName == 'Slovensko'
+                    ? snapshot.data![0].shopUrlSk
+                    : snapshot.data![0].shopUrlCz;
                 return cardDetail.isManualCode
                     ? InteractiveViewer(
                         panEnabled: true,
