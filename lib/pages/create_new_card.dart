@@ -35,20 +35,17 @@ Future<String?> scanFile() async {
     String? filePath = pickedFile.files.single.path;
     if (filePath != null) {
       final file = File(filePath);
-      return await BarcodeFinder.scanFile(path: file.path);
+      try{
+        var code = await BarcodeFinder.scanFile(path: file.path);
+        return code;
+      } catch(e){
+        return 'ErrorReadingCode';
+      }
     } else {
       return 'Error';
     }
   } else {
     return 'Wrong file';
-  }
-}
-
-Barcode selectBarcode(bool isQRCode) {
-  if (isQRCode) {
-    return Barcode.qrCode();
-  } else {
-    return Barcode.code128();
   }
 }
 
@@ -246,7 +243,7 @@ class CreateNewCardState extends State<CreateNewCard> {
                           padding:
                               MaterialStateProperty.all<EdgeInsetsGeometry>(
                                   const EdgeInsets.all(15))),
-                      child: Text(
+                      child: const Text(
                         textAlign: TextAlign.center,
                         softWrap: true,
                         maxLines: 15,
@@ -265,12 +262,24 @@ class CreateNewCardState extends State<CreateNewCard> {
                     child: OutlinedButton(
                       onPressed: () async {
                         String? res = await scanFile();
+                        print("Res error: $res");
                         if (res == 'Wrong file') {
                           QuickAlert.show(
                               context: context,
                               type: QuickAlertType.error,
                               title: 'Kód',
                               text: 'Nepodporovaný súbor! Vyber len obrázok.',
+                              confirmBtnText: 'Pokračovať',
+                              barrierDismissible: false,
+                              onConfirmBtnTap: () async {
+                                Navigator.pop(context);
+                              });
+                        } else if (res == 'ErrorReadingCode') {
+                          QuickAlert.show(
+                              context: context,
+                              type: QuickAlertType.error,
+                              title: 'Kód',
+                              text: 'Nedokážem prečítať kód z obrázka.',
                               confirmBtnText: 'Pokračovať',
                               barrierDismissible: false,
                               onConfirmBtnTap: () async {
