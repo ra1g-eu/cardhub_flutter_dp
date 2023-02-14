@@ -23,6 +23,7 @@ Future<String> fetchNewShopsFromApi() async {
   return result;
 }
 
+
 Image base64ToImage(String base64) {
   return Image.memory(
     height: 100,

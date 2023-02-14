@@ -7,6 +7,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:135042529245:android:e22c08b9f1654e65a02834",
+        "android_client_info": {
+          "package_name": "eu.ra1g.cardhub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "135042529245-4sv1ll8ir1c82sd491f5fmpkoac45osl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrG05NcAPLBBQJXWHNurNXCYq0kMSsjt4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "135042529245-4sv1ll8ir1c82sd491f5fmpkoac45osl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:135042529245:android:ba0348f0c54566f8a02834",
         "android_client_info": {
           "package_name": "eu.ra1g.cardhubflutter"

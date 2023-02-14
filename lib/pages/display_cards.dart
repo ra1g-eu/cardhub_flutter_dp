@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cardhub/apicalls/get_all_cards.dart';
 import 'package:cardhub/database/dbhelper.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
 import 'package:cardhub/structures/cards.dart';
 import 'package:flutter/services.dart';
@@ -168,6 +169,8 @@ class DisplayCardState extends State<DisplayCard> {
                         child: Ink(
                           child: InkWell(
                             onTap: () async {
+                              Trace sortCountryButtonTrace = FirebasePerformance.instance.newTrace('pages/display_cards/sortCountryButtonTrace');
+                              await sortCountryButtonTrace.start();
                               final prefs =
                                   await SharedPreferences.getInstance();
 
@@ -187,6 +190,7 @@ class DisplayCardState extends State<DisplayCard> {
                                 });
                               }
                               print(sortCountry);
+                              await sortCountryButtonTrace.stop();
                             },
                             child: Padding(
                                 padding: EdgeInsets.all(10.0),
@@ -219,6 +223,8 @@ class DisplayCardState extends State<DisplayCard> {
                         child: Ink(
                           child: InkWell(
                             onTap: () async {
+                              Trace sortPopularButtonTrace = FirebasePerformance.instance.newTrace('pages/display_cards/sortPopularButtonTrace');
+                              await sortPopularButtonTrace.start();
                               final prefs =
                                   await SharedPreferences.getInstance();
 
@@ -235,6 +241,7 @@ class DisplayCardState extends State<DisplayCard> {
                                   sortByTimesClicked = true;
                                 });
                               }
+                              await sortPopularButtonTrace.stop();
                             },
                             child: Padding(
                                 padding: EdgeInsets.all(10.0),
@@ -267,6 +274,8 @@ class DisplayCardState extends State<DisplayCard> {
                         child: Ink(
                           child: InkWell(
                             onTap: () async {
+                              Trace sortFavoriteButtonTrace = FirebasePerformance.instance.newTrace('pages/display_cards/sortFavoriteButtonTrace');
+                              await sortFavoriteButtonTrace.start();
                               final prefs =
                                   await SharedPreferences.getInstance();
 
@@ -282,6 +291,7 @@ class DisplayCardState extends State<DisplayCard> {
                                   isFavorite = true;
                                 });
                               }
+                              await sortFavoriteButtonTrace.stop();
                             },
                             child: Padding(
                                 padding: EdgeInsets.all(10.0),
@@ -371,6 +381,7 @@ class DisplayCardState extends State<DisplayCard> {
                             isLoaded = true;
                           },
                         );
+
                         List<Cards> newCards = snapshot.data!;
 
                         if (isFavorite) {

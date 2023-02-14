@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:cardhub/apicalls/logout.dart';
 import 'package:cardhub/pages/add_new_card.dart';
@@ -10,6 +12,7 @@ import 'package:cardhub/pages/edit_existing_card.dart';
 import 'package:cardhub/pages/webview_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -20,7 +23,7 @@ import 'apicalls/login_api.dart';
 import 'apicalls/register_api.dart';
 import 'firebase_options.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.android,
@@ -28,9 +31,16 @@ void main() async {
 
 
   // Pass all uncaught "fatal" errors from the framework to Crashlytics
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
 
+  Trace sharedPrefsTrace = FirebasePerformance.instance.newTrace('main/main()/SharedPrefsGetInstance');
+  await sharedPrefsTrace.start();
   final prefs = await SharedPreferences.getInstance();
+  await sharedPrefsTrace.stop();
   if (prefs.containsKey('lateLogOut')) {
     await LogOutApi().logOutWithCode(prefs.getString('loginCode')!, true);
     await prefs.remove('loginCode');
@@ -52,6 +62,7 @@ class MyApp extends StatelessWidget {
   final String initialRoute;
 
   const MyApp({super.key, required this.initialRoute});
+
 
   // This widget is the root of your application.
   @override
