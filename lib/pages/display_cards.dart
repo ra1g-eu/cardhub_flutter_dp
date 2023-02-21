@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cardhub/apicalls/get_all_cards.dart';
@@ -44,6 +45,9 @@ class DisplayCardState extends State<DisplayCard> {
   late bool sortByTimesClicked = false;
   late String sortCountry = 'Slovensko';
   bool isLoaded = false;
+  bool isSearch = false;
+  TextEditingController searchQuery = TextEditingController();
+  Timer? _debounce;
 
   getChecks() async {
     final prefs = await SharedPreferences.getInstance();
@@ -57,6 +61,12 @@ class DisplayCardState extends State<DisplayCard> {
     isLoaded = false;
     getChecks();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
   }
 
   @override
@@ -169,7 +179,9 @@ class DisplayCardState extends State<DisplayCard> {
                         child: Ink(
                           child: InkWell(
                             onTap: () async {
-                              Trace sortCountryButtonTrace = FirebasePerformance.instance.newTrace('pages/display_cards/sortCountryButtonTrace');
+                              Trace sortCountryButtonTrace =
+                                  FirebasePerformance.instance.newTrace(
+                                      'pages/display_cards/sortCountryButtonTrace');
                               await sortCountryButtonTrace.start();
                               final prefs =
                                   await SharedPreferences.getInstance();
@@ -200,7 +212,7 @@ class DisplayCardState extends State<DisplayCard> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.currency_exchange,
+                                    const Icon(Icons.currency_exchange,
                                         size: 30, color: Colors.white),
                                     Text(
                                       sortCountry == '-'
@@ -223,7 +235,9 @@ class DisplayCardState extends State<DisplayCard> {
                         child: Ink(
                           child: InkWell(
                             onTap: () async {
-                              Trace sortPopularButtonTrace = FirebasePerformance.instance.newTrace('pages/display_cards/sortPopularButtonTrace');
+                              Trace sortPopularButtonTrace =
+                                  FirebasePerformance.instance.newTrace(
+                                      'pages/display_cards/sortPopularButtonTrace');
                               await sortPopularButtonTrace.start();
                               final prefs =
                                   await SharedPreferences.getInstance();
@@ -274,7 +288,9 @@ class DisplayCardState extends State<DisplayCard> {
                         child: Ink(
                           child: InkWell(
                             onTap: () async {
-                              Trace sortFavoriteButtonTrace = FirebasePerformance.instance.newTrace('pages/display_cards/sortFavoriteButtonTrace');
+                              Trace sortFavoriteButtonTrace =
+                                  FirebasePerformance.instance.newTrace(
+                                      'pages/display_cards/sortFavoriteButtonTrace');
                               await sortFavoriteButtonTrace.start();
                               final prefs =
                                   await SharedPreferences.getInstance();
@@ -356,14 +372,50 @@ class DisplayCardState extends State<DisplayCard> {
                 appBar: AppBar(
                   backgroundColor: Colors.black,
                   automaticallyImplyLeading: false,
-                  title: Text(
-                      'Moje karty ${sortCountry == 'Slovensko' ? ' - Slovensko' : ' - Česko'}'),
+                  title: isSearch
+                      ? TextField(
+                          onChanged: (value) {
+                            if (_debounce?.isActive ?? false) {
+                              _debounce?.cancel();
+                            }
+                            _debounce =
+                                Timer(const Duration(milliseconds: 900), () {
+                              setState(() {});
+                              print(searchQuery.text);
+                            });
+                          },
+                          autofocus: true,
+                          maxLines: 1,
+                          controller: searchQuery,
+                          style: TextStyle(color: Colors.white, fontSize: 19),
+                          decoration: const InputDecoration(
+                              hintStyle:
+                                  TextStyle(color: Colors.white, fontSize: 19),
+                              border: UnderlineInputBorder(),
+                              hintText: 'Názov karty...'),
+                        )
+                      : Text(
+                          'Moje karty ${sortCountry == 'Slovensko' ? ' - Slovensko' : ' - Česko'}'),
                   actions: [
                     IconButton(
-                        onPressed: () {
-                          Navigator.maybePop(context);
+                        onPressed: () async {
+                          Trace searchCard = FirebasePerformance.instance
+                              .newTrace('pages/display_cards/searchForCard');
+                          await searchCard.start();
+
+                          setState(() {
+                            isSearch = !isSearch;
+                          });
+                          searchQuery.text = '';
+                          await searchCard.stop();
                         },
-                        icon: const Icon(Icons.logout))
+                        icon: const Icon(Icons.search)),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.maybePop(context);
+                      },
+                      icon: const Icon(Icons.logout),
+                    ),
                   ],
                 ),
                 //passing in the ListView.builder
@@ -383,6 +435,13 @@ class DisplayCardState extends State<DisplayCard> {
                         );
 
                         List<Cards> newCards = snapshot.data!;
+                        if (searchQuery.text != '') {
+                          newCards = newCards
+                              .where((item) => item.cardName
+                                  .toUpperCase()
+                                  .contains(searchQuery.text.toUpperCase()))
+                              .toList();
+                        }
 
                         if (isFavorite) {
                           newCards = newCards
@@ -416,7 +475,8 @@ class DisplayCardState extends State<DisplayCard> {
                             alignment: Alignment.center,
                             children: [
                               ListView(
-                                padding: EdgeInsets.fromLTRB(0, 200, 0, 0),
+                                padding:
+                                    const EdgeInsets.fromLTRB(0, 200, 0, 0),
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 children: [
                                   Container(
@@ -506,6 +566,7 @@ class DisplayCardState extends State<DisplayCard> {
                             alignment: AlignmentDirectional.center,
                             child: Text(snapshot.error.toString()));
                       }
+
                       return Container(
                           alignment: AlignmentDirectional.center,
                           child: const CircularProgressIndicator());
