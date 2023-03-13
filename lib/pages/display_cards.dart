@@ -49,7 +49,7 @@ class DisplayCardState extends State<DisplayCard> {
   TextEditingController searchQuery = TextEditingController();
   Timer? _debounce;
 
-  getChecks() async {
+  Future<void> getChecks() async {
     final prefs = await SharedPreferences.getInstance();
     isFavorite = prefs.getBool('isFavorite') ?? false;
     sortByTimesClicked = prefs.getBool('sortByTimesClicked') ?? false;
@@ -419,9 +419,10 @@ class DisplayCardState extends State<DisplayCard> {
                   ],
                 ),
                 //passing in the ListView.builder
-                body: FutureBuilder<List<Cards>>(
-                    future: fetchCardsFromDatabase(),
-                    builder: (context, snapshot) {
+                body: FutureBuilder(
+                    future: Future.wait([fetchCardsFromDatabase(), getChecks()]),
+                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+
                       if (!isLoaded) {
                         context.loaderOverlay.show();
                       }
@@ -433,8 +434,8 @@ class DisplayCardState extends State<DisplayCard> {
                             isLoaded = true;
                           },
                         );
+                        List<Cards> newCards = snapshot.data![0];
 
-                        List<Cards> newCards = snapshot.data!;
                         if (searchQuery.text != '') {
                           newCards = newCards
                               .where((item) => item.cardName
@@ -470,6 +471,7 @@ class DisplayCardState extends State<DisplayCard> {
                               .where((item) => item.countryName == 'Česko')
                               .toList();
                         }
+
                         if (newCards.isEmpty) {
                           return Stack(
                             alignment: Alignment.center,
@@ -561,6 +563,7 @@ class DisplayCardState extends State<DisplayCard> {
                               );
                             });
                       } else if (snapshot.hasError) {
+                        isLoaded = true;
                         context.loaderOverlay.hide();
                         return Container(
                             alignment: AlignmentDirectional.center,
