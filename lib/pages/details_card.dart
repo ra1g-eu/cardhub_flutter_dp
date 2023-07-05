@@ -6,7 +6,6 @@ import 'package:barcode_widget/barcode_widget.dart';
 import 'package:cardhub/database/dbhelper.dart';
 import 'package:cardhub/pages/webview_page.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:floating_action_bubble/floating_action_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:cardhub/structures/cards.dart';
@@ -79,12 +78,11 @@ class DetailCardState extends State<DetailCard>
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      Trace initStateTrace = FirebasePerformance.instance.newTrace('pages/details_card/initState');
-      await initStateTrace.start();
+
       cardDetails = ModalRoute.of(context)?.settings.arguments as CardDetail;
 
       isCardFavorite = await isFavorite(cardDetails.cardUuid);
-      await initStateTrace.stop();
+
       setState(() {});
     });
 

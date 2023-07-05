@@ -10,9 +10,6 @@ import 'package:cardhub/pages/details_card.dart';
 import 'package:cardhub/pages/display_cards.dart';
 import 'package:cardhub/pages/edit_existing_card.dart';
 import 'package:cardhub/pages/webview_page.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -21,26 +18,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'apicalls/login_api.dart';
 import 'apicalls/register_api.dart';
-import 'firebase_options.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.android,
-  );
-
-
-  // Pass all uncaught "fatal" errors from the framework to Crashlytics
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
-
-  Trace sharedPrefsTrace = FirebasePerformance.instance.newTrace('main/main()/SharedPrefsGetInstance');
-  await sharedPrefsTrace.start();
   final prefs = await SharedPreferences.getInstance();
-  await sharedPrefsTrace.stop();
+
   if (prefs.containsKey('lateLogOut')) {
     await LogOutApi().logOutWithCode(prefs.getString('loginCode')!, true);
     await prefs.remove('loginCode');
@@ -62,7 +43,6 @@ class MyApp extends StatelessWidget {
   final String initialRoute;
 
   const MyApp({super.key, required this.initialRoute});
-
 
   // This widget is the root of your application.
   @override
@@ -105,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    uniqueSuffix = uniqueId.substring(3,7).toUpperCase();
+    uniqueSuffix = uniqueId.substring(3, 7).toUpperCase();
     super.initState();
   }
 
@@ -233,7 +213,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                               text:
                                                   'Chyba aplikácie. Vývojár bol informovaný.',
                                             );
-                                            throw Exception('RegisterApi Error');
+                                            throw Exception(
+                                                'RegisterApi Error');
                                           } else {
                                             navigator.pop();
                                             QuickAlert.show(
@@ -345,37 +326,62 @@ class _MyHomePageState extends State<MyHomePage> {
                                         title: 'Vytvorenie účtu',
                                         text: 'Načítavam dáta...',
                                       );
-                                      bool isInternet = await InternetConnectionChecker().hasConnection;
-                                      Future.delayed(const Duration(milliseconds: 500), () async{
-                                      if (isInternet) {
-                                        String uniqueNewId = "${_registerController.text}#$uniqueSuffix";
-                                        print(uniqueNewId);
-                                        String result = await RegisterApi().registerWithCode(uniqueNewId);
-                                        if (result == 'registerSuccess') {
-                                          String result = await LoginApi().loginWithCode(uniqueNewId);
-                                          navigator.pop();
-                                          QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.loading,
-                                            title: 'Prihlásenie',
-                                            text: 'Načítavam dáta...',
-                                          );
-                                          if(result == 'loginSuccess'){
-                                            final prefs =
-                                            await SharedPreferences
-                                                .getInstance();
-                                            await prefs.setString(
-                                                'loginCode', uniqueNewId);
-                                            navigator.pushNamedAndRemoveUntil(
-                                                "/mojekarty", (_) => false);
+                                      bool isInternet =
+                                          await InternetConnectionChecker()
+                                              .hasConnection;
+                                      Future.delayed(
+                                          const Duration(milliseconds: 500),
+                                          () async {
+                                        if (isInternet) {
+                                          String uniqueNewId =
+                                              "${_registerController.text}#$uniqueSuffix";
+                                          print(uniqueNewId);
+                                          String result = await RegisterApi()
+                                              .registerWithCode(uniqueNewId);
+                                          if (result == 'registerSuccess') {
+                                            String result = await LoginApi()
+                                                .loginWithCode(uniqueNewId);
+                                            navigator.pop();
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.loading,
+                                              title: 'Prihlásenie',
+                                              text: 'Načítavam dáta...',
+                                            );
+                                            if (result == 'loginSuccess') {
+                                              final prefs =
+                                                  await SharedPreferences
+                                                      .getInstance();
+                                              await prefs.setString(
+                                                  'loginCode', uniqueNewId);
+                                              navigator.pushNamedAndRemoveUntil(
+                                                  "/mojekarty", (_) => false);
+                                            } else if (result == 'apiError') {
+                                              navigator.pop();
+                                              QuickAlert.show(
+                                                context: context,
+                                                type: QuickAlertType.error,
+                                                title: 'Prihlásenie',
+                                                text:
+                                                    'Chyba aplikácie. Vývojár bol informovaný.',
+                                              );
+                                            } else {
+                                              navigator.pop();
+                                              QuickAlert.show(
+                                                context: context,
+                                                type: QuickAlertType.error,
+                                                title: 'Vytvorenie účtu',
+                                                text: result,
+                                              );
+                                            }
                                           } else if (result == 'apiError') {
                                             navigator.pop();
                                             QuickAlert.show(
                                               context: context,
                                               type: QuickAlertType.error,
-                                              title: 'Prihlásenie',
+                                              title: 'Vytvorenie účtu',
                                               text:
-                                              'Chyba aplikácie. Vývojár bol informovaný.',
+                                                  'Chyba aplikácie. Vývojár bol informovaný.',
                                             );
                                           } else {
                                             navigator.pop();
@@ -386,34 +392,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                               text: result,
                                             );
                                           }
-                                        } else if (result == 'apiError') {
-                                          navigator.pop();
-                                          QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.error,
-                                            title: 'Vytvorenie účtu',
-                                            text:
-                                            'Chyba aplikácie. Vývojár bol informovaný.',
-                                          );
                                         } else {
                                           navigator.pop();
                                           QuickAlert.show(
                                             context: context,
                                             type: QuickAlertType.error,
                                             title: 'Vytvorenie účtu',
-                                            text: result,
+                                            text:
+                                                'Nemáš pripojenie na internet. Skús to neskôr.',
                                           );
                                         }
-                                      } else {
-                                        navigator.pop();
-                                        QuickAlert.show(
-                                          context: context,
-                                          type: QuickAlertType.error,
-                                          title: 'Vytvorenie účtu',
-                                          text:
-                                          'Nemáš pripojenie na internet. Skús to neskôr.',
-                                        );
-                                      }
                                       });
                                     }
                                   },

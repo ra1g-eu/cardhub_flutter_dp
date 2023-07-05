@@ -1,4 +1,4 @@
-import 'package:firebase_performance/firebase_performance.dart';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -61,9 +61,7 @@ class ScannerState extends State<Scanner> with SingleTickerProviderStateMixin {
 
   void _onQRViewCreated(
       QRViewController controller, BuildContext context) async {
-    Trace cameraTrace = FirebasePerformance.instance
-        .newTrace('pages/codescanner/_onQRViewCreated');
-    await cameraTrace.start();
+
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
       ScaffoldMessenger.of(context).clearSnackBars();
@@ -77,7 +75,6 @@ class ScannerState extends State<Scanner> with SingleTickerProviderStateMixin {
         Navigator.pop(context, qrText);
       }
     });
-    await cameraTrace.stop();
   }
 
   @override
