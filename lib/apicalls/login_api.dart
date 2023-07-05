@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:http/http.dart' as http;
 import 'package:cardhub/structures/constants.dart';
 import 'package:cardhub/database/dbhelper.dart';
@@ -10,8 +8,6 @@ import 'package:cardhub/database/dbhelper.dart';
 class LoginApi {
   Future<String> loginWithCode(String loginCode) async {
     try {
-      Trace loginTrace = FirebasePerformance.instance.newTrace('apicalls/login_api/loginWithCode');
-      await loginTrace.start();
       var response = await http.get(
         Uri.parse(
             "${ApiConstants.baseUrl}${ApiConstants.loginWithCode}/${loginCode.split("#")[0]}/${loginCode.split("#")[1]}"),
@@ -22,7 +18,6 @@ class LoginApi {
       ).timeout(
         const Duration(seconds: 7),
       );
-      await loginTrace.stop();
       if (jsonDecode(response.body)['status'] == "success") {
         final cardsOnly = jsonDecode(response.body)['message'];
         //print(cardsOnly);
@@ -34,19 +29,10 @@ class LoginApi {
         return jsonDecode(response.body)['message'];
       } else {
         Exception e = Exception(jsonDecode(response.body)['message']);
-        await FirebaseCrashlytics.instance.recordError(
-            e,
-            StackTrace.current,
-            reason: 'apicalls/login_api/corrupted_json_response'
-        );
-        throw e;
+        log(e.toString());
       }
     } catch (e) {
-      await FirebaseCrashlytics.instance.recordError(
-          e,
-          StackTrace.current,
-          reason: 'apicalls/login_api/try_catch'
-      );
+      log(e.toString());
     }
     return 'apiError';
   }

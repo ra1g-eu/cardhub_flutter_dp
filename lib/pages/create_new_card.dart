@@ -1,12 +1,11 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:barcode_finder/barcode_finder.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:cardhub/pages/add_new_card.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -32,25 +31,18 @@ Image base64ToImage(String base64) {
 }
 
 Future<String?> scanFile() async {
-  Trace scanFileTrace = FirebasePerformance.instance.newTrace('pages/create_new_card/scanFile');
-
   FilePickerResult? pickedFile = await FilePicker.platform.pickFiles();
 
   if (pickedFile != null) {
     String? filePath = pickedFile.files.single.path;
     if (filePath != null) {
       final file = File(filePath);
-      try{
-        await scanFileTrace.start();
+      try {
         var code = await BarcodeFinder.scanFile(path: file.path);
-        await scanFileTrace.stop();
+
         return code;
-      } catch(e){
-        await FirebaseCrashlytics.instance.recordError(
-            e,
-            StackTrace.current,
-            reason: 'pages/create_new_card/scanFile/try_catch'
-        );
+      } catch (e) {
+        log(e.toString());
         return 'ErrorReadingCode';
       }
     } else {

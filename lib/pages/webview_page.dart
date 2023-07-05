@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -97,10 +96,9 @@ class _WebViewPageState extends State<WebViewPage> {
   }
 
   callAsyncFetch() async{
-    Trace callAsyncFetchTrace = FirebasePerformance.instance.newTrace('pages/webview_page/callAsyncFetch');
-    await callAsyncFetchTrace.start();
+
     bool isInternet = await InternetConnectionChecker().hasConnection;
-    await callAsyncFetchTrace.stop();
+
     return isInternet;
   }
 }
