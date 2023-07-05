@@ -20,6 +20,7 @@ import 'apicalls/login_api.dart';
 import 'apicalls/register_api.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
 
   if (prefs.containsKey('lateLogOut')) {

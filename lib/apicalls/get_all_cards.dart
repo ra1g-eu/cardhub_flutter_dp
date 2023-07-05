@@ -18,7 +18,6 @@ class GetAllCards {
       ).timeout(
         const Duration(seconds: 7),
       );
-
       if (jsonDecode(response.body)['status'] == "success") {
         final cardsOnly = jsonDecode(response.body)['message'];
         await DBHelper().saveCards(cardsOnly);

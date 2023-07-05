@@ -7,7 +7,7 @@ import 'package:cardhub/database/dbhelper.dart';
 
 class LogOutApi {
   Future<String> logOutWithCode(String loginCode, bool isLateLogOut) async {
-    try {
+    /*try {
       var response = await http.get(
         Uri.parse(
             "${ApiConstants.baseUrl}${ApiConstants.logoutWithCode}/${loginCode.split("#")[0]}/${loginCode.split("#")[1]}"),
@@ -33,10 +33,12 @@ class LogOutApi {
     } catch (e) {
       log(e.toString());
     }
-    return 'apiError';
+    return 'apiError';*/
+    await DBHelper().purgeDBAfterLogOut();
+    return 'logoutSuccess';
   }
 
-  Future<bool> forceLogOut() async{
+  Future<bool> forceLogOut() async {
     await DBHelper().purgeDBAfterLogOut();
     return true;
   }

@@ -18,6 +18,7 @@ Future<List<Cards>> fetchCardsFromDatabase() async {
   var dbHelper = DBHelper();
   Future<List<Cards>> cards;
   cards = dbHelper.getCardsWithExtraInfo();
+  await Future.delayed(const Duration(milliseconds: 400));
   return cards;
 }
 
@@ -45,19 +46,23 @@ class DisplayCardState extends State<DisplayCard> {
   late String sortCountry = 'Slovensko';
   bool isLoaded = false;
   bool isSearch = false;
+  bool isFiltering = false;
   TextEditingController searchQuery = TextEditingController();
   Timer? _debounce;
+  late Future<List<Cards>> _cards;
 
   Future<void> getChecks() async {
     final prefs = await SharedPreferences.getInstance();
     isFavorite = prefs.getBool('isFavorite') ?? false;
     sortByTimesClicked = prefs.getBool('sortByTimesClicked') ?? false;
     sortCountry = prefs.getString('sortCountry') ?? '-';
+    setState(() {});
   }
 
   @override
   initState() {
     isLoaded = false;
+    _cards = fetchCardsFromDatabase();
     getChecks();
     super.initState();
   }
@@ -196,7 +201,6 @@ class DisplayCardState extends State<DisplayCard> {
                                   sortCountry = 'Česko';
                                 });
                               }
-                              print(sortCountry);
                             },
                             child: Padding(
                                 padding: EdgeInsets.all(10.0),
@@ -365,7 +369,6 @@ class DisplayCardState extends State<DisplayCard> {
                             _debounce =
                                 Timer(const Duration(milliseconds: 900), () {
                               setState(() {});
-                              print(searchQuery.text);
                             });
                           },
                           autofocus: true,
@@ -398,23 +401,22 @@ class DisplayCardState extends State<DisplayCard> {
                   ],
                 ),
                 //passing in the ListView.builder
-                body: FutureBuilder(
-                    future:
-                        Future.wait([fetchCardsFromDatabase(), getChecks()]),
-                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+                body: FutureBuilder<List<Cards>>(
+                    future: _cards,
+                    initialData: const [],
+                    builder: (context, snapshot) {
                       if (!isLoaded) {
                         context.loaderOverlay.show();
                       }
                       if (snapshot.hasData) {
                         Future.delayed(
-                          const Duration(milliseconds: 800),
+                          const Duration(milliseconds: 450),
                           () {
                             context.loaderOverlay.hide();
                             isLoaded = true;
                           },
                         );
-                        List<Cards> newCards = snapshot.data![0];
-
+                        List<Cards> newCards = snapshot.data!;
                         if (searchQuery.text != '') {
                           newCards = newCards
                               .where((item) => item.cardName
@@ -548,7 +550,6 @@ class DisplayCardState extends State<DisplayCard> {
                             alignment: AlignmentDirectional.center,
                             child: Text(snapshot.error.toString()));
                       }
-
                       return Container(
                           alignment: AlignmentDirectional.center,
                           child: const CircularProgressIndicator());

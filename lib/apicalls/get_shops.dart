@@ -8,8 +8,7 @@ class GetAllShops {
   Future<String> getShopsWithCode(String loginCode) async {
     try {
       var response = await http.get(
-        Uri.parse(
-            "${ApiConstants.baseUrl}${ApiConstants.getShopsWithCode}"),
+        Uri.parse("${ApiConstants.baseUrl}${ApiConstants.getShopsWithCode}"),
         headers: <String, String>{
           'Authorization': 'SystemCode $loginCode',
           'App-Request-Header': 'CardHub/REQ/CH/1.0.0',

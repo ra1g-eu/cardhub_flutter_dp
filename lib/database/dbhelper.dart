@@ -35,10 +35,10 @@ class DBHelper {
 
   Future<void> purgeDBAfterLogOut() async {
     var dbClient = await db;
-    await dbClient.rawQuery('TRUNCATE TABLE shops');
-    await dbClient.rawQuery('TRUNCATE TABLE cards');
-    await dbClient.rawQuery('TRUNCATE TABLE cards_favorite');
-    await dbClient.rawQuery('TRUNCATE TABLE sqlite_sequence');
+    await dbClient.rawQuery('DELETE FROM shops');
+    await dbClient.rawQuery('DELETE FROM cards');
+    await dbClient.rawQuery('DELETE FROM cards_favorite');
+    await dbClient.rawQuery('DELETE FROM sqlite_sequence');
   }
 
   Future<void> saveSingleCard(var cardToSave) async {
@@ -99,9 +99,9 @@ class DBHelper {
     var dbClient = await db;
     await dbClient.rawQuery('DELETE FROM shops');
     Batch batch = dbClient.batch();
-
     for (var val in shopsList) {
       Shops shops = Shops.fromMap(val);
+
       batch.insert('shops', shops.toMap());
     }
 
@@ -218,7 +218,7 @@ class DBHelper {
   Future<List<Cards>> getSingleCard(String cardUuid) async {
     var dbClient = await db;
     List<Map> list = await dbClient
-        .rawQuery('SELECT * FROM cards WHERE cardUuid = "$cardUuid" LIMIT 1');
+        .rawQuery('SELECT * FROM cards WHERE cardUuid = ? LIMIT 1', [cardUuid]);
     List<Cards> card = [];
 
     for (int i = 0; i < list.length; i++) {
@@ -241,7 +241,7 @@ class DBHelper {
   Future<List<Cards>> getCardForEdit(String cardUuid) async {
     var dbClient = await db;
     List<Map> list = await dbClient
-        .rawQuery('SELECT * FROM cards WHERE cardUuid = "$cardUuid"');
+        .rawQuery('SELECT * FROM cards WHERE cardUuid = ?', [cardUuid]);
     List<Cards> card = [];
 
     for (int i = 0; i < list.length; i++) {
